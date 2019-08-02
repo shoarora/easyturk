@@ -1,0 +1,379 @@
+<html>
+<head>
+  <title>Select the correct synonym.</title>
+  <!-- easyturk depends on these libraries -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.min.js'></script>
+  <!-- end of required libraries -->
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js'></script>
+  <style>
+    #prodigy-choices li span {
+      font-weight: bold;
+    }
+    .instructions-container {
+      background-color: #ecfcff;
+    }
+    .choices-container {
+      background-color: #ecfcff;
+    }
+    .ui-container {
+      background-color: #ecfcff;
+    }
+    .task-container {
+      background-color: #b2fcff;
+    }
+    .selected {
+      background-color: #3e64ff;
+      color: white;
+    }
+    .option-button {
+      width: 90%;
+    }
+    .option-button:hover {
+      background-color: #5edfff;
+      color: white;
+    }
+    .option {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      margin: 5px;
+    }
+    #options {
+       list-style: none;
+    }
+    .card {
+      margin-top: 25px;
+    }
+    p {
+      font-size: 17px;
+      text-align: center;
+    }
+    li {
+        font-size: 22px;
+    }
+    div {
+        font-size: 22px;
+    }
+  </style>
+</head>
+<body>
+<button class='btn btn-lg btn-block btn-primary' id='toggle-instructions'>Hide Instructions</button>
+<div class='container card instructions-container'>
+  <div class='card-body' id='instructions-section'>
+    <div class='card-text instructions'>
+      <div class='row'>
+        <div class='col-md-12'>
+          <h1>Instructions</h1>
+        </div>
+      </div>
+      <div class='row'>
+        <div class='col-md-12'>
+          <ul>
+            <li>In this task, we will present a label, a text, and a list of possible synonyms.</li>
+            <li>
+              For each text, please select the correct synonym.
+            </li>
+            <li>
+              Synonyms, in this context, are defined as:
+              <ul>
+                <li>
+                  a word or phrase that is interchangeable with the prompted text
+                </li>
+                <li>
+                  a word or phrase that is the intended meaning of the prompted text
+                </li>
+                <li>
+                  a word or phrase that is the correct spelling of the prompted text
+                </li>
+              </ul>
+            </li>
+            <li>
+              When in doubt, please refer to this page, which will have examples listed.
+            </li>
+            <li>
+              Sometimes, the prompted text will not match the label. When this happens, please select the option: “This does not apply to the label ABC.” Alternatively, you can hit the red reject button.
+
+            </li>
+            <li>
+              Sometimes, the prompted text does not match the options provided. When this happens, please select the option: “None of the above”
+            </li>
+            <li>
+              Here is a <a href= 'https://forms.gle/t76TxPSmRTngJYEJA'>survey link for feedback</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='container card choices-container'>
+  <div class='card-body'>
+    <div class='row'>
+      <div class='card-text col-md-12'>
+        <h2>Choices and examples for this task.</h2>
+        <ul id='prodigy-choices'>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='container card ui-container'>
+  <div class='card-body'>
+    <div class='card-text'>
+      <h2>UI Usage</h2>
+      <img src='https://storage.googleapis.com/us-de-ner-public/turk_choice_demo.gif' />
+      <ul>
+        <li>
+          Click on the correct name or press the corresponding number key to make a selection.
+        </li>
+        <li>
+          To go to the next question, press the <b>next</b> button or <b>“a” key</b>.
+        </li>
+        <li>
+          To undo an answer, click the grey <b>back</b> button.
+        </li>
+        <li>
+          Click <b>submit</b> once you've answered all questions.
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class='container card task-container'>
+  <h2>The Task: </h2>
+
+  <h4>Find a synonym for <span id='entity'></span>:</h4>
+  <div class='card-body text-center'>
+    <h3 id='text'></h3>
+    <ul id='options'>
+    </ul>
+  </div>
+
+  <div class='row justify-content-center' style='margin-top: 10px; padding-bottom: 10px;'>
+    <div class='col-2'>
+      <button id='prev-btn' class='btn btn-lg btn-primary' disabled>Back</button>
+    </div>
+    <div class='col-2'>
+      <span id='counter'>
+        <span class='counter-top'></span> / <span class='counter-bottom'></span>
+      </span>
+    </div>
+    <div class='col-2'>
+      <button id='next-btn' class='btn btn-lg btn-primary' disabled>Next</button>
+    </div>
+  </div>
+</div>
+
+<!--IMPORTANT: This import contains all the functions you need to read in your input data and send back worker outputs.-->
+{% include "easyturk.html" %}
+
+  <script>
+    // Define some default input.
+    // It is good practice to define standard inputs for a task which will be overwritten when launching
+    // your actual task. The default inputs allow you to render and debug your task locally.
+    var DEFAULT_INPUT = {"data": [{"gold_answer": 0, "gold_explanation": "test", "attribute_id":"000_envy","entity_id":"d549395d-b5bd-4a77-90c1-591342a6a393","label":"MODEL","normalized":"envy","pattern":"envy","text":"envy","options":[{"id":0,"text":"HP ENVY x360","metadata":{"attribute_id":"4b0c866c-da17-4ad3-9936-11defce26fbe"}},{"id":1,"text":"Acer Aspire 5315","metadata":{"attribute_id":"0aa5d02c-9718-45b0-b89e-09e20fc821cd"}},{"id":2,"text":"Acer Aspire 5742","metadata":{"attribute_id":"8072d8bc-a9c2-4e13-9df4-96aca9b5bc62"}},{"id":3,"text":"ASUS VivoBook","metadata":{"attribute_id":"23f97310-f364-44e4-b896-4cde88d10d41"}},{"id":4,"text":"Google Pixelbook","metadata":{"attribute_id":"eca0f5e4-ac4c-48b0-9609-d13b732f98f0"}},{"id":5,"text":"Acer TravelMate","metadata":{"attribute_id":"2ccf42dc-a2bf-41fc-950b-59711b262061"}},{"id":6,"text":"HP Spectre","metadata":{"attribute_id":"3b3ba85e-d21a-48ff-b036-795c64f9676a"}},{"id":7,"text":"HP Spectre Folio","metadata":{"attribute_id":"6a52f26d-57ea-4a25-9cdd-362cee671835"}},{"id":8,"text":"HP Spectre X360","metadata":{"attribute_id":"d452f064-cc75-41d1-b997-5dc360a49aa2"}},{"id":9,"text":"Acer Aspire S","metadata":{"attribute_id":"b4445030-813e-4e28-9d78-718615687cfa"}},{"id":10,"text":"This does not apply to MODEL."},{"id":11,"text":"None of the above"}]},{"attribute_id":"000_1640","entity_id":"d549395d-b5bd-4a77-90c1-591342a6a393","label":"MODEL","normalized":"1640","pattern":"1640","text":"1640","options":[{"id":0,"text":"Dell XPS M1530","metadata":{"attribute_id":"7a09808b-4abc-469e-9321-53cb64aa0ce7"}},{"id":1,"text":"Dell Studio 1737","metadata":{"attribute_id":"f1d0d663-8e2e-4c6c-9347-f0d4513f0c24"}},{"id":2,"text":"Dell Inspiron 1545","metadata":{"attribute_id":"8d21b562-376a-4c97-a747-44a85418d79f"}},{"id":3,"text":"Dell Inspiron 1525","metadata":{"attribute_id":"85e0406c-7ff3-472f-9451-3e170d7121d5"}},{"id":4,"text":"Dell XPS M1330","metadata":{"attribute_id":"353886f4-e5c6-49f4-9310-a2ac02c15be0"}},{"id":5,"text":"Dell Vostro 1520","metadata":{"attribute_id":"9f748406-2a59-4016-81c1-8eda00813bb9"}},{"id":6,"text":"Dell Inspiron 1501","metadata":{"attribute_id":"20f805d8-206e-43a4-863d-d099887828b3"}},{"id":7,"text":"Dell Latitude D600","metadata":{"attribute_id":"e2467f4e-f37d-4a65-8b1b-6c9a3f87eb5c"}},{"id":8,"text":"Dell Inspiron 15 3000","metadata":{"attribute_id":"f9c1db3a-5f86-46a4-a3b2-05b26e4a1c92"}},{"id":9,"text":"Dell Latitude D830","metadata":{"attribute_id":"51466271-595d-43dd-bcfe-b30dbc0ccaef"}},{"id":10,"text":"This does not apply to MODEL."},{"id":11,"text":"None of the above"}]},{"attribute_id":"000_touchbar","entity_id":"7531021a-d3fb-4ca2-8c41-d400ea26a6fb","label":"FEATURES","normalized":"touchbar","pattern":"Touchbar","text":"touchbar","options":[{"id":0,"text":"10\\/100 LAN Card","metadata":{"attribute_id":"af41acbe-d1cc-4244-80e0-36b85a5b334f"}},{"id":1,"text":"Touch ID","metadata":{"attribute_id":"59635722-58a0-4e04-a1aa-0a5dfa030c3d"}},{"id":2,"text":"3D Camera","metadata":{"attribute_id":"0f3bab10-cd0c-4a29-8198-82308dc47239"}},{"id":3,"text":"Force Touch Trackpad","metadata":{"attribute_id":"feb7db82-2e7e-40da-8e73-243eae63de1d"}},{"id":4,"text":"Built-in Microphone","metadata":{"attribute_id":"0f95a4e6-220c-419d-898f-88230e9289d8"}},{"id":5,"text":"Built-in Webcam","metadata":{"attribute_id":"ef937543-8d54-432c-a78a-477162701f82"}},{"id":6,"text":"Virtual Reality Ready","metadata":{"attribute_id":"26bf8fc2-f28a-419b-8338-9713501cffa8"}},{"id":7,"text":"Multi-Touch Trackpad","metadata":{"attribute_id":"dc5635bd-c2bf-4dc7-899d-a58bb0703b27"}},{"id":8,"text":"Touch Bar","metadata":{"attribute_id":"3473a0e0-4d6a-4e61-8b99-21740c187bd6"}},{"id":9,"text":"Apple Pay","metadata":{"attribute_id":"62faa20b-2fcc-4e57-b58b-ac1f6b312755"}},{"id":10,"text":"This does not apply to FEATURES."},{"id":11,"text":"None of the above"}]}], "choice_explanations": {
+      'BRAND': 'Belvah, Havana Jack\'s Cafe, Jack Rogers, Kathrine Baumann, Liebeskind Berlin, Ora Delphine, Review, Salvatore Ferragamo, Selena Gomez, Theory, etc.',
+      'CONDITION': 'Fair, Good, Like New, New, Poor, etc.',
+      'PRODUCT': 'Bag, etc.'
+    }}
+
+    var input = null;
+    var idx = 0;
+    var showInstructions = true;
+
+    function main() {
+      // If this is a HIT on AMT, then replace the default input with the real
+      // input.
+      input = easyturk.getInput(DEFAULT_INPUT);
+      console.log(input);
+
+      // Enable the task.
+      if (!easyturk.isPreview()){
+        enableTask();
+      }
+
+      render();
+    }
+
+    // Use the current index to update the image and description
+    function render() {
+        $('#entity').text(input['data'][idx]['label']);
+        $('#text').text(input['data'][idx]['text']);
+
+        // Refresh the counter
+        $('.counter-top').text(idx + 1);
+        $('.counter-bottom').text(input.data.length);
+
+        renderOptions(input['data'][idx]['options'], input['data'][idx]['selected']);
+        renderInstructions(input['choice_explanations']);
+
+        // If the UI is enabled, enable or disable the buttons depending on
+        // the index.
+        if (enabled) {
+            $('#prev-btn').prop('disabled', false);
+            $('#next-btn').prop('disabled', false);
+            if (idx == 0) {
+                $('#prev-btn').prop('disabled', true);
+            }
+            if (idx == input.data.length - 1) {
+                $('#next-btn').prop('disabled', true);
+            }
+        }
+    }
+
+    // Update the index, and save the text in the text area.
+    function setIdx(newIdx) {
+        if (!checkGold() || (newIdx < 0 || newIdx >= input.data.length)) return;
+        idx = newIdx;
+        render();
+    }
+
+    function checkGold() {
+      if ('gold_answer' in input.data[idx]) {
+        if (input.data[idx]['selected'] === input.data[idx]['gold_answer']) {
+
+          // gold_correct gets added at the first answer attempt
+          // if it exists, they tried multiple times.  mark as incurrect
+          if ('gold_correct' in input.data[idx]) {
+            input.data[idx]['gold_correct'] = false;
+          } else {
+            // mark as correct only if it's the first answer attempt
+            input.data[idx]['gold_correct'] = true;
+          }
+          return true;
+        } else {
+          input.data[idx]['gold_correct'] = false;
+          alert(input.data[idx]['gold_explanation']);
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function renderOptions(options, selected) {
+      $('#options').empty();
+      for (let i in options) {
+        let option = options[i];
+        let button = $('<button type="button" class="btn btn-lg btn-block option-button">'+option.text+'</button>');
+
+        if (parseInt(i) === selected) {
+          button.addClass('selected');
+        }
+
+        button.click(function() {
+          selectOption(option.id);
+        });
+
+        let li = $('<li class="option">'+option.id+': </li>');
+        li.append(button);
+        $('#options').append(li);
+      }
+    }
+
+    function selectOption(optionId) {
+      input['data'][idx]['selected'] = optionId;
+      render();
+    }
+
+    function renderInstructions(explanations) {
+      $('#prodigy-choices').empty();
+      for (let choice in explanations) {
+        let li = $('<li><span>'+choice+'</span>:  '+explanations[choice]+'</li>');
+        $('#prodigy-choices').append(li);
+      }
+    }
+
+    function allowSubmit() {
+      let allDefaultAnswers = true;
+      for (let k in input.data) {
+        let data = input.data[k];
+
+        if (!('selected' in data)) {
+          alert('Please answer all questions before submitting.  Question ' + (parseInt(k)+1) + ' missing');
+          return false;
+        }
+
+        if (data.selected > data.options.length) {
+          alert('Question ' + k + ' has an invalid answer');
+          return false;
+        }
+
+        if (('gold_answer' in data) || (data.options[data.selected].text === 'None of the above' ||
+            data.options[data.selected].text.includes('This does not apply to'))) {
+        } else {
+          allDefaultAnswers = false;
+        }
+      }
+
+      if (allDefaultAnswers) {
+        alert('You answered "This does not apply" or "None of the above" for every question.  Please answer the questions.');
+        return false;
+      }
+
+      return false;
+    }
+
+    // Enable the UI.
+    function enableTask() {
+      enabled = true;
+      easyturk.setupSubmit();
+
+      // Enable components
+
+      $(document).keypress(function(e) {
+        let key = e.which;
+        // console.log('nice', key);
+        if (key >= 48 && key <= 57) {
+          selectOption(key - 48);
+        } else if (key === 97) {
+          setIdx(idx + 1);
+        }
+      });
+
+      $('#toggle-instructions').click(function() {
+        showInstructions = !showInstructions;
+        if(showInstructions) {
+          $('#toggle-instructions').text('Hide Instructions');
+        } else {
+          $('#toggle-instructions').text('Show Instructions');
+        }
+        let toggleDivs = ['.instructions-container', '.choices-container', '.ui-container'];
+        toggleDivs.map(function(name) {
+          console.log(name);
+          $(name).toggleClass('d-none');
+        })
+      })
+
+      $('#next-btn').click(function() {
+          setIdx(idx + 1);
+      });
+      $('#prev-btn').click(function() {
+          setIdx(idx - 1);
+      });
+      $('#submit-btn').prop('disabled', false);
+
+      $('#submit-btn').click(function() {
+        let output = input;  // TODO update output
+        if (easyturk.isPreview()) {
+          alert("This is only a preview. Here is your output: \n" + JSON.stringify(output));
+          return false;
+        } else if (!allowSubmit()) {
+          return false;
+        } else {
+          easyturk.setOutput(output);
+          return true;
+        }
+      });
+    }
+
+    main();
+  </script>
+</body>
+</html>

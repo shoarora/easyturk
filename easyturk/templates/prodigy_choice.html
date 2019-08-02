@@ -1,0 +1,244 @@
+<html>
+<head>
+  <title>Select the correct synonym.</title>
+  <!-- easyturk depends on these libraries -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.min.js'></script>
+  <!-- end of required libraries -->
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js'></script>
+  <style>
+    #prodigy-choices li span {
+      font-weight: bold;
+    }
+    .instructions-container {
+      background-color: #ecfcff;
+    }
+    .choices-container {
+      background-color: #b2fcff;
+    }
+    .ui-container {
+      background-color: #5edfff;
+    }
+    .task-container {
+      background-color: #b2fcff;
+    }
+    .card {
+      margin-top: 25px;
+    }
+    p {
+      font-size: 17px;
+      text-align: center;
+    }
+    li {
+        font-size: 22px;
+    }
+    div {
+        font-size: 22px;
+    }
+  </style>
+</head>
+<body>
+<div class='container card instructions-container'>
+  <div class='card-body' id='instructions-section'>
+    <div class='card-text instructions'>
+      <div class='row'>
+        <div class='col-md-12'>
+          <h1>Instructions</h1>
+        </div>
+      </div>
+      <div class='row'>
+        <div class='col-md-12'>
+          <ul>
+            <li>In this task, we will present a label, a text, and a list of possible synonyms.</li>
+            <li>
+              For each text, please select the correct synonym.
+            </li>
+            <li>
+              Synonyms, in this context, are defined as:
+              <ul>
+                <li>
+                  a word or phrase that is interchangeable with the prompted text
+                </li>
+                <li>
+                  a word or phrase that is the intended meaning of the prompted text
+                </li>
+                <li>
+                  a word or phrase that is the correct spelling of the prompted text
+                </li>
+              </ul>
+            </li>
+            <li>
+              When in doubt, please refer to this page, which will have examples listed.
+            </li>
+            <li>
+              Sometimes, the prompted text will not match the label. When this happens, please select the option: “This does not apply to the label ABC.” Alternatively, you can hit the red reject button.
+
+            </li>
+            <li>
+              Sometimes, the prompted text does not match the options provided. When this happens, please select the option: “None of the above”
+            </li>
+            <li>
+              Here is a <a href= 'https://forms.gle/t76TxPSmRTngJYEJA'>survey link for feedback</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='container card choices-container'>
+  <div class='card-body'>
+    <div class='row'>
+      <div class='card-text col-md-12'>
+        <h2>Choices and examples for this task.</h2>
+        <ul id='prodigy-choices'>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='container card ui-container'>
+  <div class='card-body'>
+    <div class='card-text'>
+      <h2>UI Usage</h2>
+      <img src='https://storage.googleapis.com/us-de-ner-public/prodigy_choice_demo.gif' />
+      <ul>
+        <li>
+          To submit an answer, click the <span style='color:green'>green</span> <b>"accept"</b> button or press the <b>“a” key</b>.
+        </li>
+        <li>
+          To skip an example, click the <span style='color:red'>red</span> <b>"reject"</b> button or press the <b>“x” key</b>. You can also click the gray <b>“ignore”</b> button or press the <b>“space” bar</b>. We will only use the accepted answers, so you may do either.
+        </li>
+        <li>
+          To undo an answer, click the grey <b>“undo”</b> button or press the <b>“backspace”</b> button. To return to a specific example, click on the example in the History sidebar.
+        </li>
+        <li>
+          You can also use the keypad to select your answer.
+        </li>
+        <li>
+          To save your progress, click on the <b>Save</b> button at the top left of the sidebar.
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class='container card task-container'>
+  <div class='card-body'>
+    <div class='container'>
+      <h2>Task link:</h2>
+      <a id='prodigy-link' href=''>Click here</a>
+    </div>
+
+    <div class='container-fluid'>
+      <div class='row'>
+        <div class='col-md-12'>
+          <h2>Confirmation Code</h2>
+          <input type='text' id='confirm-code'/>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--IMPORTANT: This import contains all the functions you need to read in your input data and send back worker outputs.-->
+{% include "easyturk.html" %}
+
+  <script>
+    // Define some default input.
+    // It is good practice to define standard inputs for a task which will be overwritten when launching
+    // your actual task. The default inputs allow you to render and debug your task locally.
+    var DEFAULT_INPUT = {
+      'url': 'http://turk.mercari.guru:8099',
+      'job_id': 'sandbox_test',
+      'data_type': 'sandbox_test',
+      'choice_explanations': {
+        'BRAND': 'Belvah, Havana Jack\'s Cafe, Jack Rogers, Kathrine Baumann, Liebeskind Berlin, Ora Delphine, Review, Salvatore Ferragamo, Selena Gomez, Theory, etc.',
+        'CONDITION': 'Fair, Good, Like New, New, Poor, etc.',
+        'PRODUCT': 'Bag, etc.'
+      }
+    }
+    var PREVIEW_URL = '';
+
+    var input = null;
+
+    function main() {
+      // If this is a HIT on AMT, then replace the default input with the real
+      // input.
+      input = easyturk.getInput(DEFAULT_INPUT);
+      console.log(input);
+
+      // Enable the task.
+      if (!easyturk.isPreview()){
+        enableTask();
+      }
+
+      render();
+    }
+
+    // Use the current index to update the image and description
+    function render() {
+        // Set up Prodigy instructions
+        render_instructions(input['choice_explanations']);
+
+        // Set up Prodigy link
+
+        if (easyturk.isPreview()) {
+          $('#prodigy-link').attr('href', PREVIEW_URL);
+        } else {
+          $('#prodigy-link').attr('href', input['url']);
+        }
+    }
+
+    function render_instructions(explanations) {
+      for (let choice in explanations) {
+        let li = $('<li><span>'+choice+'</span>:  '+explanations[choice]+'</li>');
+        $('#prodigy-choices').append(li);
+      }
+    }
+
+    function confirmCode(code) {
+      return new Promise(function(resolve, reject) {
+        setTimeout(function() {
+          resolve(true);
+        }, 300);
+      });
+      // return $.get('http://turk.mercari.guru/confirm', { code: code });
+    }
+
+    // Enable the UI.
+    function enableTask() {
+      enabled = true;
+      easyturk.setupSubmit();
+
+      // Enable components
+      $('#submit-btn').prop('disabled', false);
+
+      $('#submit-btn').click(function() {
+        confirmCode($('confirm-code').val())
+          .then(function(success) {
+            if (success) {
+              let output = input;  // TODO update output
+              if (easyturk.isPreview()) {
+                alert("This is only a preview. Here is your output: \n" + JSON.stringify(output));
+                return false;
+              } else {
+                easyturk.setOutput(output);
+                return true;
+              }
+            } else {
+              alert("The confirmation code you entered is invalid.");
+            }
+          })
+      });
+    }
+
+    main();
+  </script>
+</body>
+</html>
