@@ -1,7 +1,7 @@
 """Functions to launch, retrieve, and parse specific EasyTurk tasks.
 """
 
-from easyturk import EasyTurk
+from .easyturk import EasyTurk
 
 
 def launch_verify_bbox(data, reward=1.00, tasks_per_hit=30, sandbox=False):
@@ -83,3 +83,9 @@ def fetch_completed_hits(hit_ids, approve=True, sandbox=False):
                     assignment_id = assignment['assignment_id']
                     et.approve_assignment(assignment_id)
     return output
+
+
+def disable_hits(hit_ids, sandbox=False):
+    et = EasyTurk(sandbox=sandbox)
+    for hit_id in hit_ids:
+        et.disable_hit(hit_id)

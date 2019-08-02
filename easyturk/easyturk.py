@@ -129,9 +129,10 @@ class EasyTurk(object):
         """
         try:
             output_tree = xml.etree.ElementTree.fromstring(assignment['Answer'])
+            print(assignment['Answer'])
             output = json.loads(output_tree[0][1].text)
             return output
-        except ValueError as e:
+        except (ValueError, TypeError) as e:
             print(e)
             return None
 
@@ -175,7 +176,7 @@ class EasyTurk(object):
                     RequesterFeedback='Invalid results')
         return results
 
-    def delete_hit(self, hit_id):
+    def disable_hit(self, hit_id):
         """Disables a hit.
 
         Args:
@@ -195,7 +196,7 @@ class EasyTurk(object):
                 self.mtc.delete_hit(HITId=hit_id)
                 return True
             except Exception as e:
-                print e
+                print(e)
                 return False
 
     def approve_hit(self, hit_id, reject_on_fail=False,
