@@ -1,0 +1,793 @@
+<html>
+<head>
+  <title>Select the correct synonym.</title>
+  <!-- easyturk depends on these libraries -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.min.js'></script>
+  <!-- end of required libraries -->
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js'></script>
+  <style>
+    #prodigy-choices li span {
+      font-weight: bold;
+    }
+    .example {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .example-text {
+      font-family: Monaco;
+      color: #3e64ff;
+    }
+    .example-img {
+      width:80%;
+    }
+    .shortcuts-container {
+      background-color: #ecfcff;
+    }
+    .instructions-container {
+      background-color: #ecfcff;
+    }
+    .choices-container {
+      background-color: #ecfcff;
+    }
+    .ui-container {
+      background-color: #ecfcff;
+    }
+    .task-container {
+      background-color: #b2fcff;
+    }
+    .selected {
+      background-color: #3e64ff;
+      color: white;
+    }
+    .highlight {
+      background-color: #ecfcff;
+    }
+    .option-button {
+      width: 90%;
+    }
+    .option-button:hover {
+      background-color: #5edfff;
+      color: white;
+    }
+    .option {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      margin: 5px;
+    }
+    #options {
+       list-style: none;
+    }
+    #entity {
+      color: orange;
+    }
+    #text {
+      color: purple;
+    }
+    .card {
+      margin-top: 25px;
+    }
+    p {
+      font-size: 17px;
+      text-align: center;
+    }
+    li {
+        font-size: 22px;
+    }
+    div {
+        font-size: 22px;
+    }
+  </style>
+</head>
+<body>
+<button class='btn btn-lg btn-block btn-primary' id='toggle-instructions'>Hide Instructions</button>
+<div class='container card instructions-container'>
+  <div class='card-body' id='instructions-section'>
+    <div class='card-text instructions'>
+      <div class='row'>
+        <div class='col-md-12'>
+          <h1>Instructions</h1>
+        </div>
+      </div>
+      <div class='row'>
+        <div class='col-md-12'>
+          <ul>
+            <li>In this task, we will present a <span style='color: purple'>text</span>, a list of possible <b>synonyms</b>, and a <span style='color: orange'>label</span>.</li>
+            <li>
+              For each <span style='color: purple'>text</span>, please select the correct <b>synonym</b>.
+            </li>
+            <li>
+              For each synonym <b>option</b>, select whether it is different than, similar to, or the same as the <span style='color: purple'>text</span>.
+            </li>
+            <br/>
+            <li>
+              <b>Same</b> is defined as:
+              <ul>
+                <li>
+                  <b>option</b> can be replaced by <span style='color: purple'>text</span> and maintain the same meaning.
+                </li>
+                <li>
+                  note that this is one-directional.  replacing <b>option</b> with <span style='color: purple'>text</span> should maintain the same meaning,
+                  but the reverse doesn't need to be true.
+                </li>
+                <li>
+                  you could think about this in the context of a google search.  would replacing <b>option</b> with <span style='color: purple'>text</span>
+                  give you the same results as <b>option</b>?  Think about this in the context of <span style='color: orange'>label</span>.
+                </li>
+              </ul>
+            </li>
+            <li>
+              <b>Similar</b> is defined as: the <b>option</b> is similar to the <span style='color: purple'>text</span>,
+              but would slightly change the meaning if replaced.
+            </li>
+            <li>
+              <b>Different</b> is defined as: <b>option</b> and <span style='color: purple'>text</span> have different intended meanings.
+            </li>
+            <br/>
+            <li>
+              When in doubt, please refer to the examples below, do a quick Google search, or contact us.  We'll work to
+              clarify the instructions.
+            </li>
+            <br/>
+            <li>
+              Sometimes, the prompted <span style='color: purple'>text</span> will not match the <span style='color: orange'>label</span>.
+              When this happens, please select the option: "This does not apply to the label ABC."
+              <!-- TODO do we want this??? -->
+            </li>
+            <br/>
+            <li>
+              Here is a <a href= 'https://forms.gle/t76TxPSmRTngJYEJA'>survey link for feedback on the task.</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='container card choices-container'>
+  <div class='card-body'>
+    <div class='row'>
+      <div class='card-text col-md-12'>
+        <h2>Example data points</h2>
+        <div class='card'>
+          <div class='card-body example'>
+            <img src='https://storage.googleapis.com/us-de-ner-public/choice2_examples/same1.png' class='example-img'/>
+            <p>
+              We consider <span class='example-text'>iPad Pro(9.7inch)</span> to be "same" as <span class='example-text'>iPad Pro</span> because replacing
+              <span class='example-text'>iPad Pro(9.7inch)</span> with <span class='example-text'>iPad Pro</span> would still give
+              <span class='example-text'>iPad Pro(9.7inch)</span> results in a Google search.
+            </p>
+          </div>
+        </div>
+        <br/>
+        <div class='card'>
+          <div class='card-body example'>
+            <img src='https://storage.googleapis.com/us-de-ner-public/choice2_examples/same3.png' class='example-img'/>
+            <p>
+              For the same reason as above, we consider <span class='example-text'>LV</span> to be the same as
+              <span class='example-text'>Louis Vuitton</span>.
+            </p>
+          </div>
+        </div>
+        <br/>
+        <div class='card'>
+          <div class='card-body example'>
+            <img src='https://storage.googleapis.com/us-de-ner-public/choice2_examples/same2.png' class='example-img'/>
+            <p>
+              <span class='example-text'>i-phone 8 s</span> is a misspelling of <span class='example-text'>Apple iPhone 8S</span>
+              so they are the same.  <span class='example-text'>Apple iPhone 8S Plus</span> is not quite the same model, but is similar.
+            </p>
+          </div>
+        </div>
+        <br/>
+        <div class='card'>
+          <div class='card-body example'>
+            <img src='https://storage.googleapis.com/us-de-ner-public/choice2_examples/similar1.png' class='example-img'/>
+            <p>
+              Contrary to the first example, if the text is <span class='example-text'>iPad Pro</span>,
+              we consider more specific options <span class='example-text'>iPad Pro(9.7inch)</span> and
+              <span class='example-text'>iPad Pro(11.3inch)</span> to be similar.  Because the options are
+              more specific than the original text, they would somewhat affect the type of results in a Google Search.
+            </p>
+          </div>
+        </div>
+        <br/>
+        <div class='card'>
+          <div class='card-body example'>
+            <img src='https://storage.googleapis.com/us-de-ner-public/choice2_examples/diff1.png' class='example-img'/>
+            <p>
+              These are different models and should be classified as different.
+            </p>
+          </div>
+        </div>
+        <br/>
+        <div class='card'>
+          <div class='card-body example'>
+            <img src='https://storage.googleapis.com/us-de-ner-public/choice2_examples/orangemulti.png' class='example-img'/>
+            <p>
+              This is a fully fledged example.
+              <span class='example-text'>orange</span>,
+              <span class='example-text'>tangerine</span>, and
+              <span class='example-text'>multi-color</span> all have commonalities with <span class='example-text'>orange multi</span>.
+              <span class='example-text'>blue multi</span> has an aspect (blue) that is explicitly different.
+              <span class='example-text'>orange multi-color</span> conceptually means the same thing.
+            </p>
+          </div>
+        </div>
+        <br/>
+        <h2>Examples of possible words for each <span style='color: orange'>label</span></h2>
+        <ul id='prodigy-choices'>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='container card ui-container'>
+  <div class='card-body'>
+    <div class='card-text'>
+      <h2>Navigating the task</h2>
+      <img src='https://storage.googleapis.com/us-de-ner-public/turk_choice2_demo.gif' />
+      <ul>
+        <li>
+          For each row, select "Different", "Similar", or "Same".  You can do this by clicking
+          or by pressing <b>j</b>, <b>k</b>, <b>l</b> keys respectively.
+        </li>
+        <li>
+          To move the cursor forward or back a row, press <b>f</b> or <b>d</b> keys respectively.
+          This only affects the <b>j</b>, <b>k</b>, <b>l</b> keys.  You could do this all by clicking
+          without the need for this.
+        </li>
+        <li>
+          To go forward or back through questions, press <b>r</b> or <b>e</b> respectively,
+          or press the "Next" or "Prev" buttons.
+        </li>
+        <li>
+          Click <b>submit</b> once you've answered all questions.
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='col-md-6 container card task-container'>
+    <h2>The Task: </h2>
+
+    <h4>Find a synonym for <span id='entity'></span>:</h4>
+    <div class='card-body text-center'>
+      <h3 id='text'></h3>
+      <ul id='options'>
+      </ul>
+    </div>
+
+    <div class='row justify-content-center' style='margin-top: 10px; padding-bottom: 10px;'>
+      <div class='col-2'>
+        <button id='prev-btn' class='btn btn-lg btn-primary' disabled>Back</button>
+      </div>
+      <div class='col-2'>
+        <span id='counter'>
+          <span class='counter-top'></span> / <span class='counter-bottom'></span>
+        </span>
+      </div>
+      <div class='col-2'>
+        <button id='next-btn' class='btn btn-lg btn-primary' disabled>Next</button>
+      </div>
+    </div>
+    {% include "easyturk.html" %}
+  </div>
+  <div class='col-md-3 container card shortcuts-container'>
+    <h2>Keyboard shortcuts</h2>
+    <ul>
+      <li>
+        <b>j</b>: select <b>different</b> and advance to the next option
+      </li>
+      <li>
+        <b>k</b>: select <b>similar</b> and advance to the next option
+      </li>
+      <li>
+        <b>l</b>: select <b>same</b> and advance to the next option
+      </li>
+      <br/>
+      <li>
+        <b>f</b>: advance to the next option
+      </li>
+      <li>
+        <b>d</b>: go back to the previous option
+      </li>
+      <br/>
+      <li>
+        <b>r</b>: advance to the next text
+      </li>
+      <li>
+        <b>e</b>: go back to the previous text
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!--IMPORTANT: This import contains all the functions you need to read in your input data and send back worker outputs.-->
+
+  <script>
+    // Define some default input.
+    // It is good practice to define standard inputs for a task which will be overwritten when launching
+    // your actual task. The default inputs allow you to render and debug your task locally.
+    var DEFAULT_INPUT = {
+      "data": [{
+        "gold_answer": ["similar", "different", "different", "different", "different", "different", "different", "different", "different", "different"],
+        "gold_explanation": "test",
+        "attribute_id": "000_envy",
+        "entity_id": "d549395d-b5bd-4a77-90c1-591342a6a393",
+        "label": "MODEL",
+        "normalized": "envy",
+        "pattern": "envy",
+        "text": "envy",
+        "options": [{
+          "id": 0,
+          "text": "HP ENVY x360",
+          "metadata": {
+            "attribute_id": "4b0c866c-da17-4ad3-9936-11defce26fbe"
+          }
+        }, {
+          "id": 1,
+          "text": "Acer Aspire 5315",
+          "metadata": {
+            "attribute_id": "0aa5d02c-9718-45b0-b89e-09e20fc821cd"
+          }
+        }, {
+          "id": 2,
+          "text": "Acer Aspire 5742",
+          "metadata": {
+            "attribute_id": "8072d8bc-a9c2-4e13-9df4-96aca9b5bc62"
+          }
+        }, {
+          "id": 3,
+          "text": "ASUS VivoBook",
+          "metadata": {
+            "attribute_id": "23f97310-f364-44e4-b896-4cde88d10d41"
+          }
+        }, {
+          "id": 4,
+          "text": "Google Pixelbook",
+          "metadata": {
+            "attribute_id": "eca0f5e4-ac4c-48b0-9609-d13b732f98f0"
+          }
+        }, {
+          "id": 5,
+          "text": "Acer TravelMate",
+          "metadata": {
+            "attribute_id": "2ccf42dc-a2bf-41fc-950b-59711b262061"
+          }
+        }, {
+          "id": 6,
+          "text": "HP Spectre",
+          "metadata": {
+            "attribute_id": "3b3ba85e-d21a-48ff-b036-795c64f9676a"
+          }
+        }, {
+          "id": 7,
+          "text": "HP Spectre Folio",
+          "metadata": {
+            "attribute_id": "6a52f26d-57ea-4a25-9cdd-362cee671835"
+          }
+        }, {
+          "id": 8,
+          "text": "HP Spectre X360",
+          "metadata": {
+            "attribute_id": "d452f064-cc75-41d1-b997-5dc360a49aa2"
+          }
+        }, {
+          "id": 9,
+          "text": "Acer Aspire S",
+          "metadata": {
+            "attribute_id": "b4445030-813e-4e28-9d78-718615687cfa"
+          }
+        }]
+      }, {
+        "attribute_id": "000_1640",
+        "entity_id": "d549395d-b5bd-4a77-90c1-591342a6a393",
+        "label": "MODEL",
+        "normalized": "1640",
+        "pattern": "1640",
+        "text": "Dell Inspiron",
+        "options": [{
+          "id": 0,
+          "text": "Dell XPS M1530",
+          "metadata": {
+            "attribute_id": "7a09808b-4abc-469e-9321-53cb64aa0ce7"
+          }
+        }, {
+          "id": 1,
+          "text": "Dell Studio 1737",
+          "metadata": {
+            "attribute_id": "f1d0d663-8e2e-4c6c-9347-f0d4513f0c24"
+          }
+        }, {
+          "id": 2,
+          "text": "Dell Inspiron 1545",
+          "metadata": {
+            "attribute_id": "8d21b562-376a-4c97-a747-44a85418d79f"
+          }
+        }, {
+          "id": 3,
+          "text": "Dell Inspiron 1525",
+          "metadata": {
+            "attribute_id": "85e0406c-7ff3-472f-9451-3e170d7121d5"
+          }
+        }, {
+          "id": 4,
+          "text": "Dell XPS M1330",
+          "metadata": {
+            "attribute_id": "353886f4-e5c6-49f4-9310-a2ac02c15be0"
+          }
+        }, {
+          "id": 5,
+          "text": "Dell Vostro 1520",
+          "metadata": {
+            "attribute_id": "9f748406-2a59-4016-81c1-8eda00813bb9"
+          }
+        }, {
+          "id": 6,
+          "text": "Dell Inspiron 1501",
+          "metadata": {
+            "attribute_id": "20f805d8-206e-43a4-863d-d099887828b3"
+          }
+        }, {
+          "id": 7,
+          "text": "Dell Latitude D600",
+          "metadata": {
+            "attribute_id": "e2467f4e-f37d-4a65-8b1b-6c9a3f87eb5c"
+          }
+        }, {
+          "id": 8,
+          "text": "Dell Inspiron 15 3000",
+          "metadata": {
+            "attribute_id": "f9c1db3a-5f86-46a4-a3b2-05b26e4a1c92"
+          }
+        }, {
+          "id": 9,
+          "text": "Dell Latitude D830",
+          "metadata": {
+            "attribute_id": "51466271-595d-43dd-bcfe-b30dbc0ccaef"
+          }
+        }]
+      }, {
+        "attribute_id": "000_touchbar",
+        "entity_id": "7531021a-d3fb-4ca2-8c41-d400ea26a6fb",
+        "label": "FEATURES",
+        "normalized": "touchbar",
+        "pattern": "Touchbar",
+        "text": "touchbar",
+        "options": [{
+          "id": 0,
+          "text": "10\\/100 LAN Card",
+          "metadata": {
+            "attribute_id": "af41acbe-d1cc-4244-80e0-36b85a5b334f"
+          }
+        }, {
+          "id": 1,
+          "text": "Touch ID",
+          "metadata": {
+            "attribute_id": "59635722-58a0-4e04-a1aa-0a5dfa030c3d"
+          }
+        }, {
+          "id": 2,
+          "text": "3D Camera",
+          "metadata": {
+            "attribute_id": "0f3bab10-cd0c-4a29-8198-82308dc47239"
+          }
+        }, {
+          "id": 3,
+          "text": "Force Touch Trackpad",
+          "metadata": {
+            "attribute_id": "feb7db82-2e7e-40da-8e73-243eae63de1d"
+          }
+        }, {
+          "id": 4,
+          "text": "Built-in Microphone",
+          "metadata": {
+            "attribute_id": "0f95a4e6-220c-419d-898f-88230e9289d8"
+          }
+        }, {
+          "id": 5,
+          "text": "Built-in Webcam",
+          "metadata": {
+            "attribute_id": "ef937543-8d54-432c-a78a-477162701f82"
+          }
+        }, {
+          "id": 6,
+          "text": "Virtual Reality Ready",
+          "metadata": {
+            "attribute_id": "26bf8fc2-f28a-419b-8338-9713501cffa8"
+          }
+        }, {
+          "id": 7,
+          "text": "Multi-Touch Trackpad",
+          "metadata": {
+            "attribute_id": "dc5635bd-c2bf-4dc7-899d-a58bb0703b27"
+          }
+        }, {
+          "id": 8,
+          "text": "Touch Bar",
+          "metadata": {
+            "attribute_id": "3473a0e0-4d6a-4e61-8b99-21740c187bd6"
+          }
+        }, {
+          "id": 9,
+          "text": "Apple Pay",
+          "metadata": {
+            "attribute_id": "62faa20b-2fcc-4e57-b58b-ac1f6b312755"
+          }
+        }]
+      }],
+      "choice_explanations": {
+        'BRAND': 'Belvah, Havana Jack\'s Cafe, Jack Rogers, Kathrine Baumann, Liebeskind Berlin, Ora Delphine, Review, Salvatore Ferragamo, Selena Gomez, Theory, etc.',
+        'CONDITION': 'Fair, Good, Like New, New, Poor, etc.',
+        'PRODUCT': 'Bag, etc.'
+      }
+    }
+
+
+    var input = null;
+    var idx = 0;
+    var currentOptionId = 0;
+    var showInstructions = true;
+
+    function main() {
+      // If this is a HIT on AMT, then replace the default input with the real
+      // input.
+      input = easyturk.getInput(DEFAULT_INPUT);
+      console.log(input);
+
+      // Enable the task.
+      if (!easyturk.isPreview()){
+        enableTask();
+      }
+
+      render();
+    }
+
+    // Use the current index to update the image and description
+    function render() {
+        $('#entity').text(input['data'][idx]['label']);
+        $('#text').text(input['data'][idx]['text']);
+
+        // Refresh the counter
+        $('.counter-top').text(idx + 1);
+        $('.counter-bottom').text(input.data.length);
+
+        renderOptions(input['data'][idx]['options']);
+        renderInstructions(input['choice_explanations']);
+
+        // If the UI is enabled, enable or disable the buttons depending on
+        // the index.
+        if (enabled) {
+            $('#prev-btn').prop('disabled', false);
+            $('#next-btn').prop('disabled', false);
+            if (idx == 0) {
+                $('#prev-btn').prop('disabled', true);
+            }
+            if (idx == input.data.length - 1) {
+                $('#next-btn').prop('disabled', true);
+            }
+        }
+    }
+
+    // Update the index, and save the text in the text area.
+    function setIdx(newIdx) {
+        if (!checkGold() || (newIdx < 0 || newIdx >= input.data.length)) return;
+        idx = newIdx;
+        currentOptionId = 0;
+        render();
+    }
+
+    function setCurrentOptionId(newId) {
+      if (newId < input.data[idx].options.length && newId >= 0) {
+        currentOptionId = newId;
+      }
+      render();
+    }
+
+    function arraysEqual(a, b) {
+      return JSON.stringify(a.sort()) === JSON.stringify(b.sort());
+    }
+
+    function checkGold() {
+      let selections = input.data[idx]['options'].map(function(d) {
+        return d.selected;
+      });
+
+      if ('gold_answer' in input.data[idx]) {
+        if (arraysEqual(selections, input.data[idx]['gold_answer'])) {
+          // gold_correct gets added at the first answer attempt
+          // if it exists, they tried multiple times.  mark as incurrect
+          if ('gold_correct' in input.data[idx]) {
+            input.data[idx]['gold_correct'] = false;
+          } else {
+            // mark as correct only if it's the first answer attempt
+            input.data[idx]['gold_correct'] = true;
+          }
+          return true;
+        } else {
+          input.data[idx]['gold_correct'] = false;
+          alert(input.data[idx]['gold_explanation']);
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function renderOptions(options) {
+      $('#options').empty();
+      for (let i in options) {
+        let option = options[i];
+
+        let li = $('<li class="option">'+option.text+': </li>');
+        let bg = $('<div class="btn-group" role="group">');
+
+        if (currentOptionId === parseInt(i)) {
+          li.addClass('highlight');
+        }
+        li.append(bg);
+
+        let diffButton = $('<button type="button" class="btn option-button">'+'Different'+'</button>');
+        let simButton = $('<button type=button class="btn option-button">'+'Similar'+'</button>');
+        let sameButton = $('<button type=button class="btn option-button">'+'Same'+'</button>');
+
+        bg.append(diffButton);
+        bg.append(simButton);
+        bg.append(sameButton);
+
+        if (option.selected === 'different') {
+          diffButton.addClass('selected');
+        }
+        diffButton.click(function() {
+          selectOption(option.id, 'different');
+        });
+
+        if (option.selected === 'similar') {
+          simButton.addClass('selected');
+        }
+        simButton.click(function() {
+          selectOption(option.id, 'similar');
+        });
+
+        if (option.selected === 'same') {
+          sameButton.addClass('selected');
+        }
+        sameButton.click(function() {
+          selectOption(option.id, 'same');
+        });
+
+        $('#options').append(li);
+      }
+    }
+
+    function selectOption(optionId, selection) {
+      if ('selected' in input['data'][idx]['options'][optionId]) {
+        if (input['data'][idx]['options'][optionId]['selected'] === selection) {
+          input['data'][idx]['options'][optionId]['selected'] = null;
+        } else {
+          input['data'][idx]['options'][optionId]['selected'] = selection;
+        }
+      } else {
+        input['data'][idx]['options'][optionId]['selected'] = selection;
+      }
+      render();
+    }
+
+    function renderInstructions(explanations) {
+      $('#prodigy-choices').empty();
+      for (let choice in explanations) {
+        let li = $('<li><span>'+choice+'</span>:  '+explanations[choice]+'</li>');
+        $('#prodigy-choices').append(li);
+      }
+    }
+
+    function anySelected(data) {  // TODO fix this requirement
+      for (let option in data.options) {
+        if (option.selected && option.selected !== 'different') {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function allowSubmit() {
+      for (let k in input.data) {
+        let data = input.data[k];
+
+        // TODO update these reqs
+        if (!anySelected(data)) {
+          alert('Please answer all questions before submitting.  Question ' + (parseInt(k)+1) + ' missing');
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // Enable the UI.
+    function enableTask() {
+      enabled = true;
+      easyturk.setupSubmit();
+
+      // Enable components
+
+      $(document).keypress(function(e) {
+        /*
+        j => different + advance
+        k => similar + advance
+        l => same + advance
+
+        f => advance
+        d => back
+
+        enter => next data point
+        backspace = > previous data point
+         */
+        let key = e.which;
+        if (key === 106) {
+          selectOption(currentOptionId, 'different');
+          setCurrentOptionId(currentOptionId+1);
+        } else if (key === 107) {
+          selectOption(currentOptionId, 'similar');
+          setCurrentOptionId(currentOptionId+1);
+        } else if (key === 108) {
+          selectOption(currentOptionId, 'same');
+          setCurrentOptionId(currentOptionId+1);
+        } else if (key === 102) {
+          setCurrentOptionId(currentOptionId+1);
+        } else if (key === 100) {
+          setCurrentOptionId(currentOptionId-1);
+        } else if (key === 114) {
+          setIdx(idx + 1);
+        } else if (key === 101) {
+          setIdx(idx - 1);
+        }
+      });
+
+      $('#toggle-instructions').click(function() {
+        showInstructions = !showInstructions;
+        if(showInstructions) {
+          $('#toggle-instructions').text('Hide Instructions');
+        } else {
+          $('#toggle-instructions').text('Show Instructions');
+        }
+        let toggleDivs = ['.instructions-container', '.choices-container', '.ui-container'];
+        toggleDivs.map(function(name) {
+          $(name).toggleClass('d-none');
+        })
+      })
+
+      $('#next-btn').click(function() {
+          setIdx(idx + 1);
+      });
+      $('#prev-btn').click(function() {
+          setIdx(idx - 1);
+      });
+      $('#submit-btn').prop('disabled', false);
+
+      $('#submit-btn').click(function() {
+        let output = input;  // TODO update output
+        if (easyturk.isPreview()) {
+          alert("This is only a preview. Here is your output: \n" + JSON.stringify(output));
+          return false;
+        } else if (!allowSubmit()) {
+          return false;
+        } else {
+          easyturk.setOutput(output);
+          return true;
+        }
+      });
+    }
+
+    main();
+  </script>
+</body>
+</html>
