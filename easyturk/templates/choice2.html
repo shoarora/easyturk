@@ -38,14 +38,14 @@
       background-color: #ecfcff;
     }
     .task-container {
-      background-color: #b2fcff;
+      background-color: #ecf6ff;
     }
     .selected {
       background-color: #3e64ff;
       color: white;
     }
     .highlight {
-      background-color: #ecfcff;
+      background-color: #ecffee;
     }
     .option-button {
       width: 90%;
@@ -112,7 +112,7 @@
                   <b>option</b> can be replaced by <span style='color: purple'>text</span> and maintain the same meaning.
                 </li>
                 <li>
-                  note that this is one-directional.  replacing <b>option</b> with <span style='color: purple'>text</span> should maintain the same meaning,
+                  note that this doesn't mean they have to be fully interchangeable.  replacing <b>option</b> with <span style='color: purple'>text</span> should maintain the same meaning,
                   but the reverse doesn't need to be true.
                 </li>
                 <li>
@@ -321,7 +321,7 @@
     var DEFAULT_INPUT = {
       "data": [{
         "gold_answer": ["similar", "different", "different", "different", "different", "different", "different", "different", "different", "different"],
-        "gold_explanation": "test",
+        "gold_explanation": "envy is similar to HP ENVY x360 and different from the rest.",
         "attribute_id": "000_envy",
         "entity_id": "d549395d-b5bd-4a77-90c1-591342a6a393",
         "label": "MODEL",
@@ -690,9 +690,21 @@
       }
     }
 
-    function anySelected(data) {  // TODO fix this requirement
-      for (let option in data.options) {
+    function anySelected(data) {
+      // Checks that for a question, at least one thing is given similar or same
+      for (let i in data.options) {
+        let option = data.options[i];
         if (option.selected && option.selected !== 'different') {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function anyBlank(data) {
+      for (let i in data.options) {
+        let option = data.options[i];
+        if (!option.selected) {
           return true;
         }
       }
@@ -704,7 +716,11 @@
         let data = input.data[k];
 
         // TODO update these reqs
-        if (!anySelected(data)) {
+        // if (!anySelected(data)) {
+        //   alert('Please answer all questions before submitting.  Question ' + (parseInt(k)+1) + ' missing');
+        //   return false;
+        // }
+        if (anyBlank(data)) {
           alert('Please answer all questions before submitting.  Question ' + (parseInt(k)+1) + ' missing');
           return false;
         }
