@@ -99,9 +99,6 @@
           <ul>
             <li>In this task, we will present a <span style='color: purple'>text</span>, a list of possible <b>synonyms</b>, and a <span style='color: orange'>label</span>.</li>
             <li>
-              For each <span style='color: purple'>text</span>, please select the correct <b>synonym</b>.
-            </li>
-            <li>
               For each synonym <b>option</b>, select whether it is different than, similar to, or the same as the <span style='color: purple'>text</span>.
             </li>
             <br/>
@@ -134,15 +131,14 @@
               clarify the instructions.
             </li>
             <br/>
-            <li>
+            <!-- <li>
               Sometimes, the prompted <span style='color: purple'>text</span> will not match the <span style='color: orange'>label</span>.
-              When this happens, please select the option: "This does not apply to the label ABC."
-              <!-- TODO do we want this??? -->
-            </li>
+              When this happens, please select the option: "This does not apply to the label ABC."  TODO do we want this?
+            </li> -->
             <br/>
-            <li>
+            <!-- <li>
               Here is a <a href= 'https://forms.gle/t76TxPSmRTngJYEJA'>survey link for feedback on the task.</a>
-            </li>
+            </li> -->
           </ul>
         </div>
       </div>
@@ -223,6 +219,10 @@
         <br/>
         <h2>Examples of possible words for each <span style='color: orange'>label</span></h2>
         <ul id='prodigy-choices'>
+        </ul>
+        <br/>
+        <ul>
+          Please make sure you specify one of (Different, Similar Same) for every row.
         </ul>
       </div>
     </div>
@@ -307,6 +307,10 @@
       </li>
       <li>
         <b>e</b>: go back to the previous text
+      </li>
+      <br/>
+      <li>
+        Make sure you select one option for each row.
       </li>
     </ul>
   </div>
@@ -616,7 +620,8 @@
           return true;
         } else {
           input.data[idx]['gold_correct'] = false;
-          alert(input.data[idx]['gold_explanation']);
+          let alertText = "Your answer is incorrect.  \n" + input.data[idx]['gold_explanation'] + '\nPlease correct it before continuing.'
+          alert(alertText);
           return false;
         }
       }
